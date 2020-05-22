@@ -7,7 +7,5 @@ public class DelayQueueTest {
 
     public static void main(String[] args){
         BlockingQueue queue = new DelayQueue();
-
-
     }
 }
