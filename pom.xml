@@ -6,9 +6,14 @@
 
   <groupId>com.skydragon</groupId>
   <artifactId>java-study</artifactId>
-  <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>common</module>
+        <module>basic</module>
+    </modules>
 
-  <name>java-study</name>
+    <name>java-study</name>
   <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 
@@ -52,6 +57,17 @@
       <artifactId>spring-context</artifactId>
       <version>5.2.6.RELEASE</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-framework</artifactId>
+      <version>2.12.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-recipes</artifactId>
+      <version>2.12.0</version>
+    </dependency>
+
   </dependencies>
 
   <build>
