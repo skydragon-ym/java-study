@@ -1,4 +1,4 @@
-package com.skydragon.common.zkutil;
+package com.skydragon.service.common.zkutil;
 
 import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;

@@ -2,8 +2,6 @@ package com.skydragon.study.threadpool;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class CompletableFutureTest2 {
     public static void main(String[] args) throws InterruptedException {

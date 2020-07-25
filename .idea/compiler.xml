@@ -8,12 +8,21 @@
         <outputRelativeToContentRoot value="true" />
         <module name="common" />
         <module name="basic" />
+        <module name="AccountService" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
+    <bytecodeTargetLevel target="8">
+      <module name="AccountService" target="1.8" />
       <module name="basic" target="1.8" />
       <module name="common" target="1.8" />
       <module name="java-study" target="1.8" />
     </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="AccountService" options="" />
+      <module name="basic" options="" />
+      <module name="common" options="" />
+    </option>
   </component>
 </project>
