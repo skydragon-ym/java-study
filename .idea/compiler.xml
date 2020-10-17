@@ -8,8 +8,8 @@
         <outputRelativeToContentRoot value="true" />
         <module name="account-service" />
         <module name="common" />
-        <module name="service-interface" />
         <module name="basic" />
+        <module name="service-interface" />
         <module name="sdoa-web" />
       </profile>
     </annotationProcessing>
@@ -19,9 +19,7 @@
       <module name="common" target="1.8" />
       <module name="java-study" target="1.8" />
       <module name="sdoa-web" target="1.8" />
-      <module name="SDOA-Web" target="1.8" />
       <module name="service-interface" target="1.8" />
-      <module name="service.interface" target="1.8" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">

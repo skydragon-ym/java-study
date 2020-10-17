@@ -5,7 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class SocketServerTest {
+public class BIOSocketTest {
     //超过BACK_LOG数量的请求将会被丢弃
 
     //server socket property
@@ -25,10 +25,10 @@ public class SocketServerTest {
     private static boolean CLIENT_LINGER=true;
     private static int CLIENT_LINGER_NUMBER=1;
 
+    //BIO
     public static void main(String[] args) throws IOException {
         ServerSocket server = null;
 
-        //BIO
         try{
             server = new ServerSocket();
             server.bind(new InetSocketAddress(9090), BACK_LOG);
