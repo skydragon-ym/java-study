@@ -8,9 +8,10 @@
         <outputRelativeToContentRoot value="true" />
         <module name="account-service" />
         <module name="common" />
-        <module name="basic" />
         <module name="service-interface" />
         <module name="sdoa-web" />
+        <module name="service" />
+        <module name="basic" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="8">
@@ -19,6 +20,7 @@
       <module name="common" target="1.8" />
       <module name="java-study" target="1.8" />
       <module name="sdoa-web" target="1.8" />
+      <module name="service" target="1.8" />
       <module name="service-interface" target="1.8" />
     </bytecodeTargetLevel>
   </component>

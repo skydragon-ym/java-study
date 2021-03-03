@@ -1,4 +1,4 @@
-package com.skydragon.oa.web;
+package com.skydragon.oa.web.controller;
 
 import com.skydragon.oa.service.contract.AccountService;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -16,11 +16,13 @@ public class AccountController {
     AccountService accountService;
 
     @GetMapping("/login")
+    //显示登录页面
     public String Login(){
         return "login";
     }
 
     @PostMapping("/login")
+    //执行后台登录逻辑
     public String DoLogin(){
         return accountService.login();
     }

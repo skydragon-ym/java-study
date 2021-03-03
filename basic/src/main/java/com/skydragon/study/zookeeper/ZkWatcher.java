@@ -3,12 +3,16 @@ package com.skydragon.study.zookeeper;
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
 
-public class ZkMonitor implements Watcher,AsyncCallback.DataCallback {
-    private final ZooKeeper zooKeeper;
+import java.util.concurrent.locks.LockSupport;
 
-    public ZkMonitor(ZooKeeper zk){
+public class ZkWatcher implements Watcher,AsyncCallback.DataCallback {
+    private final ZooKeeper zooKeeper;
+    Thread thread;
+
+    public ZkWatcher(ZooKeeper zk){
         zooKeeper = zk;
     }
+
     @Override
     public void processResult(int rc, String path, Object ctx, byte[] data, Stat stat) {
 
@@ -26,6 +30,9 @@ public class ZkMonitor implements Watcher,AsyncCallback.DataCallback {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+        }
+        if(event.getType() == Event.EventType.NodeDeleted){
+            LockSupport.unpark(this.thread);
         }
     }
 }

@@ -17,7 +17,6 @@ interface EchoService{
         registry = "${dubbo.registry.id}"
 )
 class EchoServiceImpl implements EchoService{
-
     public String echo(String message) {
         return "Echo: " + message;
     }
@@ -28,7 +27,7 @@ public class DubboProviderBootstrap
 {
     public static void main( String[] args ) throws InterruptedException {
         ConfigurableApplicationContext app = new SpringApplicationBuilder(DubboProviderBootstrap.class)
-                //.web(WebApplicationType.NONE)
+                .web(WebApplicationType.NONE)
                 .run(args);
     }
 }

@@ -15,6 +15,7 @@
     <module>sdoa-web</module>
       <module>service-interface</module>
     <module>service-interface</module>
+      <module>service</module>
   </modules>
 
   <name>java-study</name>

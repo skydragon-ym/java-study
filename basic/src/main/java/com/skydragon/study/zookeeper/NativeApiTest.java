@@ -18,7 +18,7 @@ public class NativeApiTest {
             }
         });
 
-        ZkMonitor monitor = new ZkMonitor(zk);
+        ZkWatcher monitor = new ZkWatcher(zk);
 
         //Watcher is one time trigger
         zk.getData("/srv01", monitor, new Stat());

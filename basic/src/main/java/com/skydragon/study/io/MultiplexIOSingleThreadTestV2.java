@@ -113,7 +113,7 @@ public class MultiplexIOSingleThreadTestV2 {
                 e.printStackTrace();
             }
         });
-        t.setUncaughtExceptionHandler(new UnchecckedExceptionhandler());
+        t.setUncaughtExceptionHandler(new UnCheckedExceptionHandler());
         t.start();
     }
 

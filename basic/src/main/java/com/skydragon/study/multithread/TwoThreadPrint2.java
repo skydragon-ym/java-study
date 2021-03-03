@@ -17,7 +17,7 @@ public class TwoThreadPrint2 {
                     System.out.println(a1.get(i));
                     try {
                         lock.notify();
-                        lock.wait(); //release lock
+                        lock.wait(); //set current thread status to wait and release lock
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

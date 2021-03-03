@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.LockSupport;
 
+/*
+t1线程想在t2线程写入第五个元素的时候得到通知
+ */
 public class LockSupportTest {
     static Thread t1 = null;
     static Thread t2 = null;
@@ -14,9 +17,9 @@ public class LockSupportTest {
         //t2
         t2 = new Thread(()-> {
             LockSupport.park();
-            LockSupport.unpark(t1);
             //do something here...
             System.out.println("T2 End");
+            LockSupport.unpark(t1);
         });
 
         //t1

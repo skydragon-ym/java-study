@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: SDOA
+
+server:
+  port: 8080
+
+dobbo:
+  scan:
+    base-packages: com.skydragon.oa.service
+  protocal:
+    name: dubbo
+    port: 20880
+    host: localhost
+  registry:
+    address: zookeeper:192.168.75.129:2181

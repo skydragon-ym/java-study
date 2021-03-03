@@ -1,0 +1,43 @@
+#Spring boot application
+spring:
+  application:
+    name: AccountService
+
+#Service version
+account:
+  service:
+    version: 1.0.0
+
+dubbo:
+  config-center:
+    timeout: 30000
+
+  #Base packages to scan Dubbo components (@Service, @Reference)
+  scan:
+    base-packages: com.skydragon.service
+
+  #Dubbo config properties
+  #ApplicationConfig Bean
+  application:
+    id: account.service.provider
+    name: account.service.provider
+
+  #dubbo ProtocolConfig Bean
+  protocol:
+    id: dubbo
+    name: dubbo
+    port: 20880
+    host: 127.0.0.1
+
+  #dubbo RegistryConfig Bean
+  registry:
+    id: dubbo.registry
+    address: zookeeper://192.168.75.129:2181
+    #如果连接zookeeper超时，增大这个时间
+    timeout: 10000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
