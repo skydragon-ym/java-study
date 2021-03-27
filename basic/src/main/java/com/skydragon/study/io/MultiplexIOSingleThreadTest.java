@@ -8,13 +8,13 @@ import java.util.Iterator;
 import java.util.Set;
 
 //第三阶段：多路复用器
-public class MultiplexIOSingleThreadTestV1 {
+public class MultiplexIOSingleThreadTest {
     //private ByteBuffer sendbuffer = ByteBuffer.allocate(4096);
     //private ByteBuffer recvbuffer = ByteBuffer.allocate(4096);
     private Selector selector;
 
     public static void main(String[] args) throws IOException {
-        MultiplexIOSingleThreadTestV1 server = new MultiplexIOSingleThreadTestV1();
+        MultiplexIOSingleThreadTest server = new MultiplexIOSingleThreadTest();
         server.start();
     }
 
@@ -25,12 +25,16 @@ public class MultiplexIOSingleThreadTestV1 {
         //listen on socket, 假设得到fd4
         server.bind(new InetSocketAddress(9090));
 
-        //优先选择epoll模型，可以通过jvm启动参数调整
-        //如果是epoll模型，则调用epoll_create, 假设得到epfd->fd3
+        /*
+        创建多路复用器
+        JDK优先选择epoll模型，可以通过jvm启动参数调整
+        如果是epoll模型，则底层调用epoll_create, 假设得到epfd->fd3
+         */
         selector = Selector.open();
 
         /*
-        epoll_ctl
+        把ServerSocket (fd4)注册到多路复用器上
+        这里JDK针对不同的IO模型做了封装
         如果是select/poll模型，jvm开辟数组，fd放进去
         如果是epoll模型，则调用epoll_ctl(fd3,ADD,fd4,EPOLLIN)
          */
@@ -54,6 +58,7 @@ public class MultiplexIOSingleThreadTestV1 {
                     }else if(key.isReadable()){
                         readHandler(key);
                     }else if(key.isWritable()){
+                        //写事件 内核send-queue 只要是空的，就会触发这里的写事件
                         writeHandler(key);
                     }
                 }
@@ -87,8 +92,9 @@ public class MultiplexIOSingleThreadTestV1 {
             while (true) {
                 read = client.read(buffer);
                 if (read > 0) {
+                    //把客户端socket注册到多路复用器中
+                    //关心  OP_WRITE 其实就是关心send-queue是不是有空间
                     client.register(key.selector(),SelectionKey.OP_WRITE,buffer);
-                    //关心  OP_WRITE 其实就是关系send-queue是不是有空间
                 } else if (read == 0) {
                     break;
                 } else {

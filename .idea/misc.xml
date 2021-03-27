@@ -10,6 +10,7 @@
       <set>
         <option value="$PROJECT_DIR$/SDOA-Web/pom.xml" />
         <option value="$PROJECT_DIR$/service-interface/pom.xml" />
+        <option value="$PROJECT_DIR$/service/pom.xml" />
       </set>
     </option>
   </component>

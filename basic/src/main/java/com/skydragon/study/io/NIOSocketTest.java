@@ -9,13 +9,14 @@ import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
 
 public class NIOSocketTest {
-    //NIO
+    //第二阶段：NIO
     public static void main(String[] args) {
         LinkedList<SocketChannel> clients = new LinkedList<>();
 
         try {
             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
             serverSocketChannel.bind(new InetSocketAddress(9090));
+            //set non-blocking IO
             serverSocketChannel.configureBlocking(false);
 
             while(true){

@@ -5,12 +5,14 @@ spring:
 server:
   port: 8080
 
-dobbo:
+dubbo:
   scan:
     base-packages: com.skydragon.oa.service
   protocal:
     name: dubbo
     port: 20880
-    host: localhost
+    host: 127.0.0.1
   registry:
-    address: zookeeper:192.168.75.129:2181
+    address: zookeeper://192.168.75.129:2181
+    #如果连接zookeeper超时，增大这个时间
+    timeout: 10000

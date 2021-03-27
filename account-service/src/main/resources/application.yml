@@ -2,6 +2,11 @@
 spring:
   application:
     name: AccountService
+  datasource:
+    username: root
+    password: P@ssw0rd
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://192.168.75.129:3306/dbname?serverTimezone=UTC&useUnicode=true@characterEncoding=utf-8
 
 #Service version
 account:

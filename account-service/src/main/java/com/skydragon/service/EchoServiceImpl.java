@@ -1,6 +1,6 @@
 package com.skydragon.service;
 
-import com.skydragon.oa.service.contract.AccountService;
+import com.skydragon.oa.service.contract.EchoService;
 import org.apache.dubbo.config.annotation.DubboService;
 
 @DubboService(
@@ -9,9 +9,9 @@ import org.apache.dubbo.config.annotation.DubboService;
         protocol = "${dubbo.protocol.id}",
         registry = "${dubbo.registry.id}"
 )
-public class AccountServiceImpl implements AccountService {
-    @Override
-    public String login() {
-        return "token";
+class EchoServiceImpl implements EchoService {
+    public String echo(String message) {
+        return "Echo: " + message;
     }
 }
+

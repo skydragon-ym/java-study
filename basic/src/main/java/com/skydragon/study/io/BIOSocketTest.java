@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+//第一阶段：BIO
 public class BIOSocketTest {
     //超过BACK_LOG数量的请求将会被丢弃
 
@@ -25,7 +26,6 @@ public class BIOSocketTest {
     private static boolean CLIENT_LINGER=true;
     private static int CLIENT_LINGER_NUMBER=1;
 
-    //BIO
     public static void main(String[] args) throws IOException {
         ServerSocket server = null;
 
@@ -44,6 +44,8 @@ public class BIOSocketTest {
 
         while (true){
             try{
+                //阻塞当前线程，如果此时client发来一些数据，server会不会接收到？
+                //内核确实是收到了数据
                 System.in.read();
 
                 Socket client = server.accept();
@@ -63,6 +65,7 @@ public class BIOSocketTest {
                             //BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                             BufferedInputStream bis = new BufferedInputStream(inputStream);
                             byte[] data = new byte[1024];
+                            //read()如果没有数据，会阻塞
                             int num = bis.read(data);
                             if(num>0){
                                 String content = new String(data,0,num);
