@@ -65,7 +65,7 @@ public class BIOSocketTest {
                             //BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
                             BufferedInputStream bis = new BufferedInputStream(inputStream);
                             byte[] data = new byte[1024];
-                            //read()如果没有数据，会阻塞
+                            //read()如果没有数据，会阻塞，所以这里必须用多线程，否则如果有新的客户端连接过来的话，是不能建立连接的
                             int num = bis.read(data);
                             if(num>0){
                                 String content = new String(data,0,num);

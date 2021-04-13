@@ -8,13 +8,13 @@ import java.util.Iterator;
 import java.util.Set;
 
 //第三阶段：多路复用器
-public class MultiplexIOSingleThreadTest {
+public class MultiplexIOSingleThreadTestV1 {
     //private ByteBuffer sendbuffer = ByteBuffer.allocate(4096);
     //private ByteBuffer recvbuffer = ByteBuffer.allocate(4096);
     private Selector selector;
 
     public static void main(String[] args) throws IOException {
-        MultiplexIOSingleThreadTest server = new MultiplexIOSingleThreadTest();
+        MultiplexIOSingleThreadTestV1 server = new MultiplexIOSingleThreadTestV1();
         server.start();
     }
 
@@ -93,11 +93,12 @@ public class MultiplexIOSingleThreadTest {
                 read = client.read(buffer);
                 if (read > 0) {
                     //把客户端socket注册到多路复用器中
-                    //关心  OP_WRITE 其实就是关心send-queue是不是有空间
+                    //OP_WRITE 其实就是关心send-queue是不是有空间
                     client.register(key.selector(),SelectionKey.OP_WRITE,buffer);
                 } else if (read == 0) {
                     break;
                 } else {
+                    //到这里说明客户端主动断开了连接，也许是ctrl+c结束了进程，服务器做出相应，也断开连接
                     client.close();
                     break;
                 }
