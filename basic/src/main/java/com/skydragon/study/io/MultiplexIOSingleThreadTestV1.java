@@ -42,7 +42,7 @@ public class MultiplexIOSingleThreadTestV1 {
 
         System.out.println("Server started...");
 
-        while (true){
+            while (true){
             //Set<SelectionKey> keys = selector.keys();
 
             //This method performs a blocking selection operation. It returns only after at least one channel is selected,
@@ -130,8 +130,8 @@ public class MultiplexIOSingleThreadTestV1 {
             e.printStackTrace();
         }
         buffer.clear();
-        //key.cancel(); //调用了cancel后，读写事件就都监听不到了?
-        //取消关注可写事件，只关注只读事件，这是一个系统调用，会产出用户态内核态的切换
+        key.cancel(); //调用了cancel后，读写事件就都监听不到了
+        //取消关注写事件，只关注读事件，这是一个系统调用，会产出用户态内核态的切换
         client.register(selector, SelectionKey.OP_READ, buffer);
 
         /*

@@ -5,7 +5,7 @@ import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import java.util.PriorityQueue;
 import java.util.concurrent.*;
 
-public class LinkedBlockingQueue {
+public class LinkedBlockingQueueTest {
     public static void main(String[] args) {
 
         BlockingQueue queue = new LinkedBlockingDeque();

@@ -10,12 +10,14 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MultiplexIOMultiThread {
+/*
+多路复用器多线程版V1，这里的多线程是指多个IO线程，将所有接入的fds分摊到多个的selector上
+这一版只是过度代码，简单的演示了利用多个selector来并行处理fds
+ */
+public class MultiplexIOMultiThreadTestV1 {
     private ServerSocketChannel server = null;
     private Selector selector1 = null;
     private Selector selector2 = null;
@@ -28,22 +30,28 @@ public class MultiplexIOMultiThread {
         server = ServerSocketChannel.open();
         server.configureBlocking(false);
         server.bind(new InetSocketAddress(port));
+
+        //用于接入client
         selector1 = Selector.open();
+        server.register(selector1, SelectionKey.OP_ACCEPT);
+
+        //处理client读写事件
         selector2 = Selector.open();
         selector3 = Selector.open();
-        server.register(selector1, SelectionKey.OP_ACCEPT);
+
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        MultiplexIOMultiThread myServer = new MultiplexIOMultiThread();
+        MultiplexIOMultiThreadTestV1 myServer = new MultiplexIOMultiThreadTestV1();
         myServer.initServer();
 
-        NioEventLoop eventLoop_boss = new NioEventLoop(myServer.selector1, 2);
-        NioEventLoop eventLoop_worker1 = new NioEventLoop(myServer.selector2);
-        NioEventLoop eventLoop_worker2 = new NioEventLoop(myServer.selector3);
+        //创建IO线程
+        SelectorThread eventLoop_boss = new SelectorThread(myServer.selector1, 2);
+        SelectorThread eventLoop_worker1 = new SelectorThread(myServer.selector2);
+        SelectorThread eventLoop_worker2 = new SelectorThread(myServer.selector3);
 
-        eventLoop_boss.start();
         //确保boss线程完全启动
+        eventLoop_boss.start();
         Thread.sleep(1000);
 
         //启动worker线程
@@ -56,26 +64,32 @@ public class MultiplexIOMultiThread {
     }
 }
 
-class NioEventLoop extends Thread{
+/*
+Selector Thread
+ */
+class SelectorThread extends Thread{
     Selector selector = null;
-    static int selectorsNum = 0;
     int id = 0;
 
-    volatile static BlockingQueue<SocketChannel>[] queue;
+    //以下2个变量都是static的，这样可以在不同的SelectorThread实例之间共享
+    static int selectorsNum = 0;
+    volatile static BlockingQueue<SocketChannel>[] queues;
     static AtomicInteger idx = new AtomicInteger();
 
-    NioEventLoop(Selector selector, int n){
+    //for boss thread
+    SelectorThread(Selector selector, int n){
         this.selector = selector;
         selectorsNum = n;
 
-        //为2个worker selector线程准备阻塞队列
-        queue = new LinkedBlockingQueue[selectorsNum];
+        //为2个worker selector线程准备阻塞队列，存放接入的fds
+        queues = new LinkedBlockingQueue[selectorsNum];
         for(int i=0; i<n; i++){
-            queue[i] = new LinkedBlockingQueue<>();
+            queues[i] = new LinkedBlockingQueue<>();
         }
     }
 
-    NioEventLoop(Selector selector){
+    //for worker thread
+    SelectorThread(Selector selector){
         this.selector = selector;
         id = idx.getAndIncrement() % selectorsNum;
         System.out.println("worker: " + id + " 启动");
@@ -85,6 +99,8 @@ class NioEventLoop extends Thread{
     public void run(){
         try{
             while (true){
+                //这里设置了timeout的时间，就不再需要其他线程再调用wakeup方法
+                //但是这种设置timeout的方式在高并发下会严重影响系统吞吐量！
                 while(selector.select(10)>0){
                     //这里是线性同步处理
                     Set<SelectionKey> selectionKeys = selector.selectedKeys();
@@ -97,12 +113,17 @@ class NioEventLoop extends Thread{
                         } else if (key.isReadable()) {
                             readHandler(key);
                         }
+                        else if(key.isWritable()){
+
+                        }
                     }
                 }
 
-                if( ! queue[id].isEmpty()) {
+                //NioEventLoop关联的client fd 队列，并注册读事件
+                if( ! queues[id].isEmpty()) {
                     ByteBuffer buffer = ByteBuffer.allocate(8192);
-                    SocketChannel client = queue[id].take();
+                    //从队列中取出1个client fd，注册读事件
+                    SocketChannel client = queues[id].take();
                     client.register(selector, SelectionKey.OP_READ, buffer);
                     System.out.println("-------------------------------------------");
                     System.out.println("新客户端：" + client.socket().getPort()+"分配到："+ (id));
@@ -120,13 +141,37 @@ class NioEventLoop extends Thread{
         SocketChannel client =  ssc.accept();
         client.configureBlocking(false);
 
+        //将client fd注册到worker的selector上
         id = idx.getAndIncrement() % selectorsNum;
-        queue[id].add(client);
+        queues[id].add(client);
     }
 
-    public void readHandler(SelectionKey key){
+    public void readHandler(SelectionKey key) throws IOException {
         SocketChannel client = (SocketChannel) key.channel();
+        ByteBuffer buffer = (ByteBuffer)key.attachment();
+        buffer.clear();
+        int count = 0;
 
+        while(true){
+            count = client.read(buffer);
+            if(count > 0){
+                buffer.flip();
+                while(buffer.hasRemaining()){
+                    client.write(buffer);
+                }
+                buffer.clear();
+            }
+            else if(count ==0){
+                break;
+            }
+            else if(count < 0){
+                //客户端断开连接了
+                System.out.println("客户端：" + client.getRemoteAddress()+"断开连接");
+                key.cancel();
+                client.close();
+                break;
+            }
+        }
     }
 
 }

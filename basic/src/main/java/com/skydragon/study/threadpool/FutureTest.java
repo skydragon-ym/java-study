@@ -1,28 +1,26 @@
 package com.skydragon.study.threadpool;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
-/*
-FutureTask
- */
-public class FutureTaskTest {
+public class FutureTest {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        FutureTask<String> task = new FutureTask<String>(()->{
+        Future<Boolean> future = executor.submit(()->{
             System.out.println("async task start...");
             try {
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println("async task end...");
-        }, "task result");
-
-        Future future = executor.submit(task);
+            return true;
+        });
 
         System.out.println("main thread do other things");
-
-        System.out.println(task.get());
+        Object result = future.get();
+        System.out.println(result);
     }
 }

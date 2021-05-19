@@ -10,7 +10,11 @@ import java.util.Set;
 /*
 为了避免顺序处理fd，某个fd处理比较耗时而阻塞后面fd处理的情况，引入多线程版本处理fd的读写逻辑
 架构1期，187，1:50分钟左右讲到了这部分知识
-但是用线程处理R/W时，为了避免R/W事件重复触发，需要频繁的调用register/cancel方法，这会频发的触发epoll_ctl(fd,del)系统调用，造成频繁的用户态内核态的切换
+但是用线程处理R/W时，为了避免R/W事件重复触发，需要频繁的调用register/cancel方法，
+这会频发的触发epoll_ctl(fd,del)系统调用，造成频繁的用户态内核态的切换
+
+这个例子中，我们为读写事件创建了新的线程，IO线程任然是单线程的（在主线程中）
+,但是这种方式会产生readHandler和writeHandler被频繁的调用，因为相同的selector在多个线程中共享了
  */
 public class MultiplexIOSingleThreadTestV2 {
     private Selector selector;
@@ -95,9 +99,12 @@ public class MultiplexIOSingleThreadTestV2 {
                 while (true) {
                     read = client.read(buffer);
                     if (read > 0) {
-                    } else if (read == 0) {
+
+                    }
+                    else if (read == 0) {
                         break;
-                    } else {
+                    }
+                    else {
                         //到这里说明客户端主动断开了连接，也许是ctrl+c结束了进程，服务器做出相应，也断开连接
                         client.close();
                         break;
@@ -109,6 +116,7 @@ public class MultiplexIOSingleThreadTestV2 {
                     buffer.get(data);
                     System.out.println("server read data: " + new String(data));
                     //关心  OP_WRITE 其实就是关系send-queue是不是有空间
+                    //因为这是在read-handler的线程中执行的，主线程的select方法就会调用
                     client.register(selector,SelectionKey.OP_WRITE,buffer);
                 }
             } catch (IOException e) {
@@ -133,7 +141,6 @@ public class MultiplexIOSingleThreadTestV2 {
                 }
             }
             buffer.clear();
-            //key.cancel();
             try {
                 client.register(selector, SelectionKey.OP_READ, buffer);
             } catch (ClosedChannelException e) {
