@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 多路复用器多线程版V1，这里的多线程是指多个IO线程，将所有接入的fds分摊到多个的selector上
 这一版只是过度代码，简单的演示了利用多个selector来并行处理fds
  */
-public class MultiplexIOMultiThreadTestV1 {
+public class MultiplexIO_MultiThreadTestV1 {
     private ServerSocketChannel server = null;
     private Selector selector1 = null;
     private Selector selector2 = null;
@@ -42,7 +42,7 @@ public class MultiplexIOMultiThreadTestV1 {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        MultiplexIOMultiThreadTestV1 myServer = new MultiplexIOMultiThreadTestV1();
+        MultiplexIO_MultiThreadTestV1 myServer = new MultiplexIO_MultiThreadTestV1();
         myServer.initServer();
 
         //创建IO线程

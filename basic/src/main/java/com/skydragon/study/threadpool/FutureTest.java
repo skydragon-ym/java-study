@@ -9,7 +9,7 @@ public class FutureTest {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        Future<Boolean> future = executor.submit(()->{
+        Future<?> future = executor.submit(()->{
             System.out.println("async task start...");
             try {
                 Thread.sleep(5000);

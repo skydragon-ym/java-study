@@ -8,13 +8,13 @@ import java.util.Iterator;
 import java.util.Set;
 
 //第三阶段：多路复用器
-public class MultiplexIOSingleThreadTestV1 {
+public class MultiplexIO_SingleThreadTestV1 {
     //private ByteBuffer sendbuffer = ByteBuffer.allocate(4096);
     //private ByteBuffer recvbuffer = ByteBuffer.allocate(4096);
     private Selector selector;
 
     public static void main(String[] args) throws IOException {
-        MultiplexIOSingleThreadTestV1 server = new MultiplexIOSingleThreadTestV1();
+        MultiplexIO_SingleThreadTestV1 server = new MultiplexIO_SingleThreadTestV1();
         server.start();
     }
 

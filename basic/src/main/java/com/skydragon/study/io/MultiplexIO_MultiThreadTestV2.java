@@ -14,8 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /*
 多路复用器多线程版V2，Reactor模型，线程模型是重点
  */
-public class
-MultiplexIOMultiThreadTestV2 {
+public class MultiplexIO_MultiThreadTestV2 {
 
     public static void main(String[] args) throws IOException {
         MyEventLoopGroup bossGroup = new MyEventLoopGroup(1);

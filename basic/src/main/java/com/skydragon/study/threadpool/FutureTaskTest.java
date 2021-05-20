@@ -17,12 +17,13 @@ public class FutureTaskTest {
                 e.printStackTrace();
             }
             System.out.println("async task end...");
-        }, "task result");
+        }, "result 1");
 
-        Future future = executor.submit(task);
+        Future future = executor.submit(task, "result 2");
 
         System.out.println("main thread do other things");
 
         System.out.println(task.get());
+        System.out.println(future.get());
     }
 }
