@@ -3,13 +3,13 @@ package com.skydragon.study.threadpool;
 import java.util.concurrent.*;
 
 /*
-FutureTask
+FutureTask: 实现 Runnable，Future 接口
  */
 public class FutureTaskTest {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        FutureTask<String> task = new FutureTask<String>(()->{
+        FutureTask<Integer> task = new FutureTask<>(()->{
             System.out.println("async task start...");
             try {
                 Thread.sleep(5000);
@@ -17,7 +17,8 @@ public class FutureTaskTest {
                 e.printStackTrace();
             }
             System.out.println("async task end...");
-        }, "result 1");
+            return 100;
+        });
 
         Future future = executor.submit(task, "result 2");
 

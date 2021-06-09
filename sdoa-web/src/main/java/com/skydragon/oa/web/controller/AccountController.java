@@ -17,13 +17,13 @@ public class AccountController {
 
     @GetMapping("/login")
     //显示登录页面
-    public String Login(){
+    public String login(){
         return "login";
     }
 
     @PostMapping("/login")
     //执行后台登录逻辑
-    public String DoLogin(){
+    public String doLogin(){
         return accountService.login();
     }
 }

@@ -11,14 +11,14 @@ import java.util.Iterator;
 import java.util.Set;
 
 /*
-单线程模型
+单线程模型， 这版代码是根据 Doug Lea 的 PPT 中的线程模型编写的， 也符合 Netty 的编程模型
  */
-public class Reactor implements Runnable{
+public class MultiplexIO_Reactor implements Runnable{
 
     final Selector selector;
     final ServerSocketChannel serverSocket;
 
-    public Reactor(int port) throws IOException {
+    public MultiplexIO_Reactor(int port) throws IOException {
         selector = Selector.open();
         serverSocket = ServerSocketChannel.open();
         serverSocket.bind(new InetSocketAddress(9090));

@@ -2,9 +2,12 @@ package com.skydragon.study.threadpool;
 
 import java.util.concurrent.*;
 
+/*
+CompletableFuture 特性1：
+ */
 public class CompletableFutureTest1 {
     public static void main(String[] args) throws ExecutionException, InterruptedException {
-        CompletableFuture<String> future = new CompletableFuture<>();
+        CompletableFuture<String> promise = new CompletableFuture<>();
 
         /*
        new Thread(()->{
@@ -21,20 +24,23 @@ public class CompletableFutureTest1 {
             @Override
             public void run() {
                 try {
-                    future.complete("task complete");
                     Thread.sleep(5000);
-                    System.out.println("task done");
+                    promise.complete("result value");
+                    System.out.println("complete task");
+
+                    Thread.sleep(5000);
+                    System.out.println("async task done");
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         };
 
-        ExecutorService es = Executors.newFixedThreadPool(2);
+        ExecutorService es = Executors.newSingleThreadExecutor();
         es.execute(task);
 
-        System.out.println(future.get());
-        System.out.println("main done");
+        System.out.println(promise.get());
+        System.out.println("main thread do other things...");
         es.shutdown();
     }
 }

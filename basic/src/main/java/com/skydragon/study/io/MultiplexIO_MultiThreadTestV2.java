@@ -2,17 +2,15 @@ package com.skydragon.study.io;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.ByteBuffer;
+import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /*
-多路复用器多线程版V2，Reactor模型，线程模型是重点
+多路复用器多线程版V2，Reactor模型，线程模型是重点，这里使用的是主从 reactor 模型
  */
 public class MultiplexIO_MultiThreadTestV2 {
 
@@ -27,6 +25,7 @@ public class MultiplexIO_MultiThreadTestV2 {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        //启动 IO 线程
         server.start();
     }
 }
@@ -53,11 +52,15 @@ class ServerBootStrap{
         直接注册channel到EventGroup中的selector可能会有问题。
         如果此时selector所在的线程由于select()方法没有就绪的fd而阻塞，
         主线程再向这个selector注册fd的话，主线程也会被阻塞*/
-        //ssc.register(bossGroup.selectEventGroup().selector, SelectionKey.OP_ACCEPT, workerGroup);
+        //ssc.register(bossGroup.getEventLoop().selector, SelectionKey.OP_ACCEPT, workerGroup);
 
         //使用事件驱动方式
         bossGroup.getEventLoop().execute(()->{
-
+            try {
+                ssc.register(bossGroup.getEventLoop().selector, SelectionKey.OP_ACCEPT, workerGroup);
+            } catch (ClosedChannelException e) {
+                e.printStackTrace();
+            }
         });
 
     }
@@ -66,7 +69,6 @@ class ServerBootStrap{
         bossGroup.start();
         workerGroup.start();
     }
-
 }
 
 class MyEventLoopGroup {
@@ -83,6 +85,7 @@ class MyEventLoopGroup {
         executorService = Executors.newFixedThreadPool(nThreads);
     }
 
+    //从 Group 中选择一个 EventLoop
     public NioEventLoop getEventLoop(){
         return eventLoops[cid.getAndIncrement() % eventLoops.length];
     }
@@ -149,7 +152,6 @@ class NioEventLoop implements Runnable{
                 task.run();
             }
         }
-
     }
 
     public void acceptHandler(SelectionKey key) throws IOException, InterruptedException {
@@ -157,13 +159,18 @@ class NioEventLoop implements Runnable{
         SocketChannel client = ssc.accept();
         client.configureBlocking(false);
 
-        //将client分配到一个worker上
+        //取得 WorkerGroup 用于将 client 分配到一个 worker 上
         MyEventLoopGroup workerGroup = (MyEventLoopGroup)key.attachment();
 
         //注册client socket
-        //client.register(workerGroup.selectEventGroup().selector, SelectionKey.OP_READ, null);
+        //client.register(workerGroup.getEventLoop().selector, SelectionKey.OP_READ, null);
+        ByteBuffer buffer = ByteBuffer.allocate(8192);
         workerGroup.getEventLoop().execute(()->{
-
+            try {
+                client.register(workerGroup.getEventLoop().selector, SelectionKey.OP_READ, buffer);
+            } catch (ClosedChannelException e) {
+                e.printStackTrace();
+            }
         });
     }
 
