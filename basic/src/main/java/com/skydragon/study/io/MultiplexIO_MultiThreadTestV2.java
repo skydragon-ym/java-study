@@ -27,6 +27,7 @@ public class MultiplexIO_MultiThreadTestV2 {
         }
         //启动 IO 线程
         server.start();
+        System.out.println("服务器启动了");
     }
 }
 
@@ -39,8 +40,8 @@ class ServerBootStrap{
     }
 
     public ServerBootStrap(MyEventLoopGroup bossGroup, MyEventLoopGroup workerGroup) throws IOException {
-        bossGroup = bossGroup;
-        workerGroup = workerGroup;
+        this.bossGroup = bossGroup;
+        this.workerGroup = workerGroup;
     }
 
     public void bind(int port) throws IOException, InterruptedException {
@@ -54,10 +55,11 @@ class ServerBootStrap{
         主线程再向这个selector注册fd的话，主线程也会被阻塞*/
         //ssc.register(bossGroup.getEventLoop().selector, SelectionKey.OP_ACCEPT, workerGroup);
 
-        //使用事件驱动方式
-        bossGroup.getEventLoop().execute(()->{
+        //使用事件驱动方式注册ServerSocket
+        NioEventLoop eventLoop = bossGroup.getEventLoop();
+        eventLoop.execute(()->{
             try {
-                ssc.register(bossGroup.getEventLoop().selector, SelectionKey.OP_ACCEPT, workerGroup);
+                ssc.register(eventLoop.selector, SelectionKey.OP_ACCEPT, workerGroup);
             } catch (ClosedChannelException e) {
                 e.printStackTrace();
             }
@@ -109,30 +111,31 @@ class NioEventLoop implements Runnable{
     @Override
     public void run() {
         try {
-            while (true){
+            while (true) {
                 /*重点：selector.select()如果当前监控的fds没有就绪事件，则一直阻塞
                 这时如果有新的client fd需要注册到这个selector的话，需要调用selector.wakeup方法唤醒线程
                 */
-                while(selector.select()>0){
+                while (selector.select() > 0) {
                     Set<SelectionKey> keys = selector.selectedKeys();
                     Iterator<SelectionKey> iterator = keys.iterator();
-                    while (iterator.hasNext()){
+                    while (iterator.hasNext()) {
                         SelectionKey key = iterator.next();
                         iterator.remove();
-                        if(key.isAcceptable()){
+                        if (key.isAcceptable()) {
                             acceptHandler(key);
-                        }else if(key.isReadable()){
+                        } else if (key.isReadable()) {
 
-                        }else if(key.isWritable()){
+                        } else if (key.isWritable()) {
 
                         }
                     }
                 }
+
                 /*如果代码执行到这里，说明selector.select()方法返回0，代表没有就绪的fd，
                 那么一定是主线程推送了task到队列中，并调用了selector.wakeup方法
                 */
                 runTask();
-
+                
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -165,10 +168,17 @@ class NioEventLoop implements Runnable{
         //注册client socket
         //client.register(workerGroup.getEventLoop().selector, SelectionKey.OP_READ, null);
         ByteBuffer buffer = ByteBuffer.allocate(8192);
-        workerGroup.getEventLoop().execute(()->{
+        NioEventLoop eventLoop = workerGroup.getEventLoop();
+        eventLoop.execute(()->{
             try {
-                client.register(workerGroup.getEventLoop().selector, SelectionKey.OP_READ, buffer);
+                client.register(eventLoop.selector, SelectionKey.OP_READ, buffer);
+                System.out.println("-------------------------------------------");
+                System.out.println("新客户端：" + client.getRemoteAddress() + client.socket().getPort());
+                System.out.println("-------------------------------------------");
+
             } catch (ClosedChannelException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         });
