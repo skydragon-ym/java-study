@@ -124,7 +124,7 @@ class NioEventLoop implements Runnable{
                         if (key.isAcceptable()) {
                             acceptHandler(key);
                         } else if (key.isReadable()) {
-
+                            readHandler(key);
                         } else if (key.isWritable()) {
 
                         }
@@ -173,7 +173,7 @@ class NioEventLoop implements Runnable{
             try {
                 client.register(eventLoop.selector, SelectionKey.OP_READ, buffer);
                 System.out.println("-------------------------------------------");
-                System.out.println("新客户端：" + client.getRemoteAddress() + client.socket().getPort());
+                System.out.println("新客户端：" + client.getRemoteAddress());
                 System.out.println("-------------------------------------------");
 
             } catch (ClosedChannelException e) {
@@ -182,6 +182,34 @@ class NioEventLoop implements Runnable{
                 e.printStackTrace();
             }
         });
+    }
+
+    public void readHandler(SelectionKey key) throws IOException {
+        SocketChannel client = (SocketChannel) key.channel();
+        ByteBuffer buffer = (ByteBuffer)key.attachment();
+        buffer.clear();
+        int count = 0;
+
+        while(true){
+            count = client.read(buffer);
+            if(count > 0){
+                buffer.flip();
+                while(buffer.hasRemaining()){
+                    client.write(buffer);
+                }
+                buffer.clear();
+            }
+            else if(count ==0){
+                break;
+            }
+            else if(count < 0){
+                //客户端断开连接了
+                System.out.println("客户端：" + client.getRemoteAddress() + " 断开连接");
+                key.cancel();
+                client.close();
+                break;
+            }
+        }
     }
 
 }
