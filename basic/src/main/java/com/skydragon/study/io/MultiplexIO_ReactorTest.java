@@ -4,7 +4,7 @@ import java.io.IOException;
 
 public class MultiplexIO_ReactorTest {
     public static void main(String[] args) throws IOException {
-        MultiplexIO_Reactor reactor = new MultiplexIO_Reactor(9090);
+        MultiplexIO_Reactor_SingleThread reactor = new MultiplexIO_Reactor_SingleThread(9090);
 
         //启动Reactor
         new Thread(reactor).start();

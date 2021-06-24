@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 /*
-为了避免顺序处理fd，某个fd处理比较耗时而阻塞后面fd处理的情况，引入多线程版本处理fd的读写逻辑
+为了避免顺序处理fd，某个fd处理比较耗时而阻塞后面fd处理的情况，将处理fd的读写逻辑放入了单独的线程中执行
 架构1期，187，1:50分钟左右讲到了这部分知识
 但是用线程处理R/W时，为了避免R/W事件重复触发，需要频繁的调用register/cancel方法，
 这会频发的触发epoll_ctl(fd,del)系统调用，造成频繁的用户态内核态的切换
@@ -58,9 +58,10 @@ public class MultiplexIO_SingleThreadTestV2 {
                     if(key.isAcceptable()){
                         acceptHandler(key);
                     }else if(key.isReadable()){
+                        //readHandler放到了一个单独的线程中异步执行了，主线程马上又回到while循环的select()方法，此时如果readHandler所在线程并没有处理完fd缓冲区的数据
+                        //基于多路复用器水平触发规则，selector.select()时，这个fd还会被认为是有数据的状态，因此又会重复执行readerHandler方法，所以先调用cancel()方法避免
+                        //readerHandler被重复调用
                         key.cancel();
-                        //这个方法放到了一个线程中运行异步执行了，马上回到while循环的select()方法，此时如果readHandler所在线程并没有处理完fd缓冲区的数据
-                        //基于多路复用器水平触发规则，selector.select()时，这个fd还会被认为是有数据的状态，因此又会重复执行readerHandler方法
                         readHandler(key);
                     }else if(key.isWritable()){
                         key.cancel();
@@ -89,6 +90,7 @@ public class MultiplexIO_SingleThreadTestV2 {
     }
 
     public void readHandler(SelectionKey key) {
+        //这里没有使用线程池，如果考虑性能问题，可以考虑使用线程池
         Thread t = new Thread(()->{
             System.out.println("Thread:" +  Thread.currentThread().getId() + " read handler.....");
             SocketChannel client = (SocketChannel) key.channel();
@@ -128,13 +130,17 @@ public class MultiplexIO_SingleThreadTestV2 {
     }
 
     private void writeHandler(SelectionKey key) throws ClosedChannelException {
+        //这里没有使用线程池，如果考虑性能问题，可以考虑使用线程池
         new Thread(()->{
-            System.out.println("Thread:" + Thread.currentThread().getName() + " write handler...");
+            System.out.println("Thread:" + Thread.currentThread().getName() + " write handler started...");
             SocketChannel client = (SocketChannel) key.channel();
             ByteBuffer buffer = (ByteBuffer) key.attachment();
             buffer.flip();
             while (buffer.hasRemaining()) {
                 try {
+                    byte[] data = new byte[buffer.limit()];
+                    buffer.get(data);
+                    System.out.println("server write data: " + new String(data));
                     client.write(buffer);
                 } catch (IOException e) {
                     e.printStackTrace();

@@ -7,7 +7,7 @@ import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.Set;
 
-//第三阶段：多路复用器
+//第三阶段：多路复用器，单线程版本
 public class MultiplexIO_SingleThreadTestV1 {
     //private ByteBuffer sendbuffer = ByteBuffer.allocate(4096);
     //private ByteBuffer recvbuffer = ByteBuffer.allocate(4096);
