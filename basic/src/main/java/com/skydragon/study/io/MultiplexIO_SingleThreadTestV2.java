@@ -15,6 +15,9 @@ import java.util.Set;
 
 这个例子中，我们为读写事件创建了新的线程，IO线程任然是单线程的（在主线程中）
 ,但是这种方式会产生readHandler和writeHandler被频繁的调用，因为相同的selector在多个线程中共享了
+
+要解决以上问题，就需要将fds分组，每一组交给一个线程来处理，这样看组内还是单线程的，多个线程并行处理不同的fds
+代码参考 MultiplexIO_MultiThreadTest 多线程版本
  */
 public class MultiplexIO_SingleThreadTestV2 {
     private Selector selector;

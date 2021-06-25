@@ -7,7 +7,8 @@ import java.nio.channels.*;
 import java.util.Iterator;
 import java.util.Set;
 
-//第三阶段：多路复用器，单线程版本
+//第三阶段：多路复用器，单线程版本V1，fd读写都在主线程中完成。
+//缺点是如果某一个fd的读写操作需要的时间很长，那么会影响后续fd的处理，降低系统的吞吐量
 public class MultiplexIO_SingleThreadTestV1 {
     //private ByteBuffer sendbuffer = ByteBuffer.allocate(4096);
     //private ByteBuffer recvbuffer = ByteBuffer.allocate(4096);
