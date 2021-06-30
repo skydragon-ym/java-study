@@ -10,13 +10,14 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /*
-多路复用器多线程版V2，Reactor模型，线程模型是重点，这里使用的是主从 reactor 模型
+多路复用器多线程版V2，Reactor模型，线程模型是重点，这里使用的是 主-从 reactor 模型
+参见架构3期，189课程，这版代码是重点，仔细读
  */
 public class MultiplexIO_MultiThreadTestV2 {
 
     public static void main(String[] args) throws IOException {
-        MyEventLoopGroup bossGroup = new MyEventLoopGroup(1);
-        MyEventLoopGroup workerGroup = new MyEventLoopGroup(2);
+        EventLoopGroup bossGroup = new EventLoopGroup(1);
+        EventLoopGroup workerGroup = new EventLoopGroup(2);
 
         ServerBootStrap server = new ServerBootStrap(bossGroup, workerGroup);
 
@@ -32,14 +33,14 @@ public class MultiplexIO_MultiThreadTestV2 {
 }
 
 class ServerBootStrap{
-    MyEventLoopGroup bossGroup;
-    MyEventLoopGroup workerGroup;
+    EventLoopGroup bossGroup;
+    EventLoopGroup workerGroup;
 
-    public ServerBootStrap(MyEventLoopGroup group) throws IOException {
+    public ServerBootStrap(EventLoopGroup group) throws IOException {
         bossGroup = workerGroup = group;
     }
 
-    public ServerBootStrap(MyEventLoopGroup bossGroup, MyEventLoopGroup workerGroup) throws IOException {
+    public ServerBootStrap(EventLoopGroup bossGroup, EventLoopGroup workerGroup) throws IOException {
         this.bossGroup = bossGroup;
         this.workerGroup = workerGroup;
     }
@@ -56,7 +57,8 @@ class ServerBootStrap{
         //ssc.register(bossGroup.getEventLoop().selector, SelectionKey.OP_ACCEPT, workerGroup);
 
         //使用事件驱动方式注册ServerSocket
-        NioEventLoop eventLoop = bossGroup.getEventLoop();
+        //
+        NioEventLoop eventLoop = bossGroup.nextEventLoop();
         eventLoop.execute(()->{
             try {
                 ssc.register(eventLoop.selector, SelectionKey.OP_ACCEPT, workerGroup);
@@ -73,13 +75,13 @@ class ServerBootStrap{
     }
 }
 
-class MyEventLoopGroup {
+class EventLoopGroup {
     ExecutorService executorService;
 
     AtomicInteger cid = new AtomicInteger(0);
     NioEventLoop[] eventLoops;
 
-    public MyEventLoopGroup(int nThreads) throws IOException {
+    public EventLoopGroup(int nThreads) throws IOException {
         eventLoops = new NioEventLoop[nThreads];
         for(int i =0; i < nThreads; i++){
             eventLoops[i] = new NioEventLoop();
@@ -88,7 +90,7 @@ class MyEventLoopGroup {
     }
 
     //从 Group 中选择一个 EventLoop
-    public NioEventLoop getEventLoop(){
+    public NioEventLoop nextEventLoop(){
         return eventLoops[cid.getAndIncrement() % eventLoops.length];
     }
 
@@ -163,12 +165,12 @@ class NioEventLoop implements Runnable{
         client.configureBlocking(false);
 
         //取得 WorkerGroup 用于将 client 分配到一个 worker 上
-        MyEventLoopGroup workerGroup = (MyEventLoopGroup)key.attachment();
+        EventLoopGroup workerGroup = (EventLoopGroup)key.attachment();
 
         //注册client socket
         //client.register(workerGroup.getEventLoop().selector, SelectionKey.OP_READ, null);
         ByteBuffer buffer = ByteBuffer.allocate(8192);
-        NioEventLoop eventLoop = workerGroup.getEventLoop();
+        NioEventLoop eventLoop = workerGroup.nextEventLoop();
         eventLoop.execute(()->{
             try {
                 client.register(eventLoop.selector, SelectionKey.OP_READ, buffer);
